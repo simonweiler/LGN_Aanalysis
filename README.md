@@ -1,1 +1,1 @@
-# LGN_Aanalysis
+# LGN_Analysis
