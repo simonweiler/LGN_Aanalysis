@@ -34,7 +34,7 @@ end
 
 dLGN_ephys={};%empty structure for saving variables
 %%%%%%DIRECTORIES%%%%%%%
-rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\';%data directory of raw data;change accordingly
+rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
 adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly 
 ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
 %%%%%%%%%%%%%%%%%%%%%%%%
