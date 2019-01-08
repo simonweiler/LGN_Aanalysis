@@ -1,4 +1,4 @@
-function  [neg_failure, pos_failure]=minianalysis(list, idx, pathName, fc, show);
+function  [neg_failure, pos_failure]=minianalysis(list, idx, pathName, fc, show, user);
 %SW181229
 %Function that extracts minis by using the std threshold criterion
 
@@ -10,8 +10,13 @@ function  [neg_failure, pos_failure]=minianalysis(list, idx, pathName, fc, show)
 
 base_start          =   1;
 base_end            =   99;
+%if user=0
 pulse_start         =   100;
 pulse_end           =   110;
+%else
+% blue_pulse_start         =   100;
+% blue_pulse_end           =   110;    
+
 
 for i=1:length(idx);
 load([char(pathName) '/' list(idx(i)).name],'-mat');
@@ -47,7 +52,7 @@ pos_failure(:,i)=pos_m;
 if show==1
 figure;
 for k=1:size(traces,2)
-subplot(5,10,k);
+subplot(size(bs_traces,2)/10,10,k);
 plot(bs_traces(1:2000,k));
 end
 figure;

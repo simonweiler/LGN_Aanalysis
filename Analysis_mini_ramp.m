@@ -15,11 +15,11 @@ clear all;%delete all current variables in workspace
 close all;%close all open windows/figures 
 
 %%%%%%IMPORTANT FLAGS, PLEASE CHANGE HERE%%%%%%%%%%%%%%%%
-analyze_mini=1;%flag if either mini only and/or ramp should be analyzed (1 or 0)
+analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
 analyze_ramp=1;
-fanalysis=1;
+fanalysis=0;
 factor=4;%std threshold factor 
-display=0;%flag to display plot (1 or 0)
+display=1;%flag to display plot (1 or 0)
 ramp_rtrace=0;%save raw ephystraces or not (1 or 0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
@@ -36,9 +36,9 @@ end
 
 dLGN_ephys={};%empty structure for saving variables
 %%%%%%DIRECTORIES%%%%%%%
-rdata_dir         = 'F:\dLGN\example data\';%data directory of raw data;change accordingly
-adata_dir         = 'F:\dLGN\analyzed_data\';%data directory of extracted date;change accordingly 
-ExpXls            = 'F:\dLGN\excel_sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
+rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\';%data directory of raw data;change accordingly
+adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly 
+ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %% parse Experiments XLS database
@@ -71,13 +71,17 @@ ramp=find(iterations==11);%ramp recordings
 failure1=find(iterations==50);%mini recordings 
 failure2=find(iterations==100);%mini recordings 
 disp(['CURRRENT EXPERIMENT is ', char(batchopt.mouse{i}), fold_name]);
+if user==0
 disp([num2str(length(ramp)/11),' ramp recordings']);
+else
+disp([num2str(length(ramp)),' ramp recordings']);
+end
 disp([num2str(length(failure1)),' failure recordings with 50 reps']);
 disp([num2str(length(failure2)),' failure recordings with 100 reps']);
 iterations=[];
 %% RAMP ANALYSIS 
 if analyze_ramp==1
-  [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace);%use nested function rampanalysis 
+  [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace,user);%use nested function rampanalysis 
   ramp=[];%clear variables for next iteration
   %list=[];%clear variables for next iteration
 end
@@ -85,17 +89,17 @@ end
 %% MINI ANALYSIS  
 if analyze_mini==1
 if length(failure1)>=1 & length(failure2)>=1%
-[neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display);%call minianalysis
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display);%call minianalysis
+[neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
 failure1=[];
 failure2=[];
 %list=[];
 elseif length(failure1)>=1 & length(failure2)==0%
- [neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display);
+ [neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);
 failure1=[];
 %list=[];
 elseif length(failure2)>=1 & length(failure1)==0% 
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display );
+[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);
 failure2=[];
 else
 disp('No failure recording');    
@@ -135,7 +139,7 @@ end
 
 if fanalysis==1   
    disp('dLGN data plotting of extracted parameters and calculation of ODI and AMPA/NMDA RATIOS');
-   adata_dir         = 'F:\dLGN\analyzed_data\';%data directory of saved data
+   adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of saved data
    
    dLGN_plot_analysis(adata_dir)   
 end
