@@ -67,9 +67,29 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
     
     %for second window (same extraction as above for blue laser window 
-    neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+   % neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+    neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:))-mean(bs_traces((redpeak_end-10)*srF:redpeak_end*srF,:));
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+    
+%     xt=1:length(bs_traces);
+%     A=pos_peak1;
+%     t1=find(bs_traces==A);
+%     t1=t1(1)
+%     t=t1:redpeak_end*srF;
+%     t=t';
+%     curr_t=bs_traces(t);
+%     f=fit(t,curr_t,'exp1');
+%     yf=f.a*exp(f.b*xt);
+     for m=1:10000;
+         diff_bs_traces(m,:)=bs_traces(m)-yf(m);
+     end
+%     
+        
+    
+   % pos_peak2(j,counter)=bs_traces((redpeak_end)*srF:redpeak_end*srF,:));
+    
     integ2(j,counter)=trapz(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+    %neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
