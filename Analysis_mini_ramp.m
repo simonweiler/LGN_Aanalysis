@@ -18,7 +18,8 @@ analyze_ramp=1;
 fanalysis=0;
 factor=4;%std threshold factor 
 display=1;%flag to display plot (1 or 0)
-ramp_rtrace=0;%save raw ephystraces or not (1 or 0)
+ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
+savefile=1;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
 disp('dLGN Analysis Mini and Ramp');
@@ -87,17 +88,17 @@ end
 %% MINI ANALYSIS  
 if analyze_mini==1
 if length(failure1)>=1 & length(failure2)>=1%
-[neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
 failure1=[];
 failure2=[];
 %list=[];
 elseif length(failure1)>=1 & length(failure2)==0%
- [neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);
+ [neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);
 failure1=[];
 %list=[];
 elseif length(failure2)>=1 & length(failure1)==0% 
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);
 failure2=[];
 else
 disp('No failure recording');    
@@ -112,6 +113,8 @@ if analyze_ramp==1 & analyze_mini==1;
  dLGN_ephys.data{adder,3}=red_ramp;
  dLGN_ephys.data{adder,4}=neg_failure;
  dLGN_ephys.data{adder,5}=pos_failure;
+ dLGN_ephys.data{adder,6}=PD1;
+ dLGN_ephys.data{adder,7}=PD2;
  adder=adder+1;
 end
 if analyze_ramp==1 & analyze_mini==0;
@@ -124,14 +127,22 @@ if analyze_ramp==0 & analyze_mini==1;
   dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
   dLGN_ephys.data{adder,2}=neg_failure;
   dLGN_ephys.data{adder,3}=pos_failure;
+  dLGN_ephys.data{adder,4}=PD1;
+  dLGN_ephys.data{adder,5}=PD2;
+  adder=adder+1;
 end
 end 
 list=[];
 end
 % SAVE in analyzed directory   
+if savefile==1
 cd(adata_dir);
 FileName=['Data_',experimentator,'_',datestr(now, 'hh-dd-mmm-yyyy')];
 save(FileName,'-struct','dLGN_ephys');
+disp('FILE SAVED');
+else
+disp('FILE NOT SAVED');
+end
 end
 %% FURTHER ANALYSIS SUCH AS ODI or AMPA/NMDA RATIO
 

@@ -56,7 +56,7 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     bs=traces(base_start*srF:base_end*srF,:);%first 100 ms baseline trace
     bs_std=std(bs);%std of baseline trace
     bs_traces=traces-mean(traces(base_start*srF:base_end*srF,:));%subtract baseline 
-    
+    bs_photodiode=photodiode-mean(photodiode(base_start*srF:base_end*srF,:));
     %for first window
     neg_peak1(j,counter)=min(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%negative peak within the red stimulation window 
     pos_peak1(j,counter)=max(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%positive peak within the red stimulation window 
@@ -64,7 +64,7 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     neg_fail1(j,counter)=neg_peak1(j,counter)<fc*bs_std*(-1);%vector with binary values when neg peaks crossed definded std threshold
     pos_fail1(j,counter)=pos_peak1(j,counter)>fc*bs_std;%vector with binary values when pos peaks crossed definded std threshold
     %photodiode 
-    PD1(j,counter)=max(photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
+    PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
     
     %for second window (same extraction as above for blue laser window 
     neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
@@ -73,7 +73,7 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
-    PD2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+    PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
     
@@ -129,8 +129,10 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     traces=data.ephys.trace_1;%raw ephys trace
     photodiode=data.acquirer.trace_1;%photodiode (PD) signal
     ind_traces=reshape(traces,[length(traces)/11 11]);
+    photodiode=reshape(photodiode,[length(traces)/11 11]);
     for i=1:size(ind_traces,2);%within each ramp load xsg files (11 in total per ramp)
     traces_clip=ind_traces(:,i);
+    photodiode_clip=photodiode(:,i);
     blue_amp(j,counter)=header.pulseJacker.pulseJacker.pulseDataMap{2,counter+1}.amplitude;%blue laser amplitude set in ephus 
     try
     red_amp(j,counter)=header.pulseJacker.pulseJacker.pulseDataMap{3,counter+1}.amplitude;%red laser amplitude set in ephus
@@ -140,6 +142,7 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     bs=traces_clip(base_start*srF:base_end*srF,:);%first 100 ms baseline trace
     bs_std=std(bs);%std of baseline trace
     bs_traces=traces_clip-mean(traces_clip(base_start*srF:base_end*srF,:));%subtract baseline 
+    bs_photodiode=photodiode_clip-mean(photodiode_clip(base_start*srF:base_end*srF,:));
     %for first window
     neg_peak1(j,counter)=min(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%negative peak within the red stimulation window 
     pos_peak1(j,counter)=max(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%positive peak within the red stimulation window 
@@ -147,7 +150,7 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     neg_fail1(j,counter)=neg_peak1(j,counter)<fc*bs_std*(-1);%vector with binary values when neg peaks crossed definded std threshold
     pos_fail1(j,counter)=pos_peak1(j,counter)>fc*bs_std;%vector with binary values when pos peaks crossed definded std threshold
     %photodiode 
-    PD1(j,counter)=max(photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
+    PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
     %for second window (same extraction as above for blue laser window 
     neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
@@ -155,12 +158,13 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
-    PD2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+    PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
     
     counter=counter+1;
     traces=[];
+ 
     %%%%%%%%%%%%%%plot
     if show==1
     plot(bs_traces(1:20000,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
