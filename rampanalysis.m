@@ -66,32 +66,53 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     %photodiode 
     PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
     
-    %for second window (same extraction as above for blue laser window 
-   % neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+%for second window (same extraction as above for blue laser window 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%IMPLEMENTED AFTER MEETING FROM 190109%% neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+   %neg peak2 is calculated using the current difference  between the last 10ms of
+   %the first time window and the peak in the subsequent 2nd window to
+   %correct for decay issues from the first pulse
     neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:))-mean(bs_traces((redpeak_end-10)*srF:redpeak_end*srF,:));
-    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
-    
-%     xt=1:length(bs_traces);
-%     A=pos_peak1;
-%     t1=find(bs_traces==A);
-%     t1=t1(1)
-%     t=t1:redpeak_end*srF;
-%     t=t';
-%     curr_t=bs_traces(t);
-%     f=fit(t,curr_t,'exp1');
-%     yf=f.a*exp(f.b*xt);
+  
+    %%%IMPLEMENTED AFTER MEETING FROM 190109%For NMDA: approach is to fit an expontial and then subtract this from
+   %the actual curve to detect a second peak
+    if j<=2
+    pos_peak2(j,counter)=0;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    elseif j==3
+    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    else j==4;
+    xt=1:50000;
+    A=pos_peak1(j,counter);
+    t1=find(bs_traces==A);
+    t1=t1(1);
+    t=t1:redpeak_end*srF;
+    t=t';
+    curr_t=bs_traces(t);
+    try
+    [f gof]=fit(t,curr_t,'exp1');
+    yf=f.a*exp(f.b*xt);
      for m=1:10000;
          diff_bs_traces(m,:)=bs_traces(m)-yf(m);
-     end
-%     
-        
-    
-   % pos_peak2(j,counter)=bs_traces((redpeak_end)*srF:redpeak_end*srF,:));
-    
+     end  
+     bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
+     %figure;plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+     pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:)); 
+     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+     if gof.adjrsquare<0.9
+       pos_peak2(j,counter)=0;
+       pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    end
+    catch 
+    pos_peak2(j,counter)=0;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    end   
+    end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     integ2(j,counter)=trapz(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
-    %neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
-    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
     PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
     %ephys_traces
@@ -172,11 +193,54 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     %photodiode 
     PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
     %for second window (same extraction as above for blue laser window 
-    neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
-    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+%     neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+%     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%IMPLEMENTED AFTER MEETING FROM 190109%% neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
+   %neg peak2 is calculated using the current difference  between the last 10ms of
+   %the first time window and the peak in the subsequent 2nd window to
+   %correct for decay issues from the first pulse
+    neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:))-mean(bs_traces((redpeak_end-10)*srF:redpeak_end*srF,:));
+  
+    %%%IMPLEMENTED AFTER MEETING FROM 190109%For NMDA: approach is to fit an expontial and then subtract this from
+   %the actual curve to detect a second peak
+    if j<=2
+    pos_peak2(j,counter)=0;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    elseif j==3
+    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    else j==4;
+    xt=1:50000;
+    A=pos_peak1(j,counter);
+    t1=find(bs_traces==A);
+    t1=t1(1);
+    t=t1:redpeak_end*srF;
+    t=t';
+    curr_t=bs_traces(t);
+    try
+    [f gof]=fit(t,curr_t,'exp1');
+    yf=f.a*exp(f.b*xt);
+     for m=1:10000;
+         diff_bs_traces(m,:)=bs_traces(m)-yf(m);
+     end  
+     bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
+     %figure;plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+     pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:)); 
+     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+     if gof.adjrsquare<0.9
+       pos_peak2(j,counter)=0;
+       pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    end
+    catch 
+    pos_peak2(j,counter)=0;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    end   
+    end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     integ2(j,counter)=trapz(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
-    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+   % pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
     PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
     %ephys_traces

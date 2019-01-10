@@ -15,6 +15,9 @@ pulse_end           =   110;
 pulse2_start        =   351; 
 pulse2_end          =   360; 
 
+%SW
+
+
 for i=1:length(idx);
 load([char(pathName) '/' list(idx(i)).name],'-mat');
 sr = header.ephys.ephys.sampleRate;%check sample rate
@@ -52,8 +55,8 @@ pos_fail=zeros(length(pos_peak));
 end
 neg_failure(:,i)=neg_m;
 pos_failure(:,i)=pos_m;
-PD1(:,i)=max(bs_photodiode(pulse_start *srF:pulse_end*srF,:));
-PD2(:,i)=max(bs_photodiode(pulse2_start *srF:pulse2_end*srF,:));
+PD1(:,i)=mean(bs_photodiode(pulse_start *srF:pulse_end*srF,:));
+PD2(:,i)=mean(bs_photodiode(pulse2_start *srF:pulse2_end*srF,:));
 %PLOT
 if show==1
 figure;

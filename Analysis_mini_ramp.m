@@ -13,13 +13,13 @@ clear all;%delete all current variables in workspace
 close all;%close all open windows/figures 
 
 %%%%%%IMPORTANT FLAGS, PLEASE CHANGE HERE%%%%%%%%%%%%%%%%
-analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
-analyze_ramp=1;
+analyze_mini=1;%flag if either mini only and/or ramp should be analyzed (1 or 0)
+analyze_ramp=0;
 fanalysis=0;
 factor=4;%std threshold factor 
 display=0;%flag to display plot (1 or 0)
 ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
-savefile=1;%save file at the end or not
+savefile=0;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
 disp('dLGN Analysis Mini and Ramp');
