@@ -289,28 +289,38 @@ ylabel('Peak AMPA / Peak NMDA');
 title('AMPA / NMDA Ratio');
 legend('Blue only','Red','Blue constant');
 %% MINI ANALYSIS
-%AMPA
-i_o_suc=zeros(1,size(data,1));
-i_o_suc_sem=zeros(1,size(data,1));
-for i=1:size(data,1)
-mblue_70(:,i)=data{i,4}(1:50,1);
-mred_70(:,i)=data{i,4}(1:50,2);
-mblue_const_70(:,i)=data{i,5}(1:50,2);
-PD_blue_70(:,i)=data{i,6}(1:50,1);
-PD_red_70(:,i)=data{i,6}(1:50,2);
-PD_blue_const_70(:,i)=data{i,7}(1:50,2);
-PD_br_ratio(:,i)=mean(PD_blue_70(:,i))/mean(PD_red_70(:,i));
-if length(find(mblue_70(:,i)<0))>5 & length(find(mred_70(:,i)<0))<7
-    disp('IPSI ONLY');
-    idx_success=find(mblue_70(1:50,i)<0);
-    i_o_suc(:,i)=mean(mblue_70(idx_success));
-    i_o_suc_sem(:,i)=std(mblue_70(idx_success,i))/length(sqrt(idx_success));    
-else
-    disp ('EITHER CONTRA ONLY OR BINOCULAR');
-end
-
-end
-
+% %AMPA
+% i_o_suc=zeros(1,size(data,1));
+% i_o_suc_sem=zeros(1,size(data,1));
+% minionly=1;
+% for i=1:size(data,1)
+% if minionly==1;
+% try
+% mblue_70(:,i)=data{i,2}(1:50,1);
+% mred_70(:,i)=data{i,2}(1:50,2);
+% PD_blue_70(:,i)=data{i,4}(1:50,1);
+% PD_red_70(:,i)=data{i,4}(1:50,2);
+% IR1_red_70(:,i)=data{i,5}(1:50,2);
+% IR1_blue_70(:,i)=data{i,6}(1:50,2);
+% PD_rb_ratio(:,i)=mean(PD_red_70(:,i))/mean(IR1_blue_70(:,i));
+% IR_rb_ratio(:,i)=mean(IR1_red_70(:,i))/mean(IR1_blue_70(:,i));
+% catch
+% end
+% end
+% end
+% 
+% 
+% if length(find(mblue_70(:,i)<0))>5 & length(find(mred_70(:,i)<0))<7
+%     disp('IPSI ONLY');
+%     idx_success=find(mblue_70(1:50,i)<0);
+%     i_o_suc(:,i)=mean(mblue_70(idx_success));
+%     i_o_suc_sem(:,i)=std(mblue_70(idx_success,i))/length(sqrt(idx_success));    
+% else
+%     disp ('EITHER CONTRA ONLY OR BINOCULAR');
+% end
+% 
+% end
+% 
 
 
     

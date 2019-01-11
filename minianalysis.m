@@ -1,4 +1,4 @@
-function  [neg_failure, pos_failure PD1 PD2]=minianalysis(list, idx, pathName, fc, show, user);
+function  [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, idx, pathName, fc, show, user);
 %SW181229
 %Function that extracts minis by using the std threshold criterion
 
@@ -15,7 +15,14 @@ pulse_end           =   110;
 pulse2_start        =   351; 
 pulse2_end          =   360; 
 
+%Calibration curves for blue/red at the 2 setups (in mW/mm2) irradiance
+%compare to Klapoetke 2014
 %SW
+% yirr_red=(12.19*PD1-0.4319)/100;
+% yirr_blue=(7.232*PD2-0.9951)/100;
+% %MF 
+% yirr_red=(104.1 *PD1-3.467)/100;
+% yirr_blue=(679.2*PD2-26.82)/100;
 
 
 for i=1:length(idx);
@@ -55,8 +62,17 @@ pos_fail=zeros(length(pos_peak));
 end
 neg_failure(:,i)=neg_m;
 pos_failure(:,i)=pos_m;
-PD1(:,i)=mean(bs_photodiode(pulse_start *srF:pulse_end*srF,:));
-PD2(:,i)=mean(bs_photodiode(pulse2_start *srF:pulse2_end*srF,:));
+PD1(:,i)=mean(photodiode(pulse_start *srF:pulse_end*srF,:));
+PD2(:,i)=mean(photodiode(pulse2_start *srF:pulse2_end*srF,:));
+if user==0%SW
+IR1_r(:,i)=(12.19*PD1(:,i)-0.4319)/100;
+IR1_b(:,i)=(7.232*PD1(:,i)-0.9951)/100;
+IR2_b(:,i)=(7.232*PD2(:,i)-0.9951)/100;
+else
+IR1_r(:,i)=(104.1*PD1(:,i)-3.467)/100;
+IR1_b(:,i)=(679.2*PD1(:,i)-26.82)/100;
+IR2_b(:,i)=(679.2*PD2(:,i)-26.82)/100;
+end 
 %PLOT
 if show==1
 figure;
