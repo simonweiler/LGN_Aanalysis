@@ -15,12 +15,13 @@ clear all;%delete all current variables in workspace
 close all;%close all open windows/figures 
 
 %%%%%%IMPORTANT FLAGS, PLEASE CHANGE HERE%%%%%%%%%%%%%%%%
-analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
-analyze_ramp=1;
+analyze_mini=1;%flag if either mini only and/or ramp should be analyzed (1 or 0)
+analyze_ramp=0;
 fanalysis=0;
 factor=4;%std threshold factor 
-display=1;%flag to display plot (1 or 0)
-ramp_rtrace=0;%save raw ephystraces or not (1 or 0)
+display=0;%flag to display plot (1 or 0)
+ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
+savefile=0;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
 disp('dLGN Analysis Mini and Ramp');
@@ -36,9 +37,9 @@ end
 
 dLGN_ephys={};%empty structure for saving variables
 %%%%%%DIRECTORIES%%%%%%%
-rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\';%data directory of raw data;change accordingly
+rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
 adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly 
-ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
+ExpXls            = 'C:\Users\simonweiler\Desktop\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %% parse Experiments XLS database
@@ -51,7 +52,7 @@ adder=1;%counting variable
 for i=1:nummice%for loop over experiments across days
   datapath=fullfile(rdata_dir, batchopt.mouse{i}, '\');%directory and name of experiments (from excel sheet)
   cd(char(datapath));%go to directory
-  
+ 
   for k=1:length(batchopt.exp_ids{i})%loop in bigger loop for each cell per experimental day
       if batchopt.exp_ids{i}(k)<10%for cells with id less then XX0010, e.g., XX0001-XX0009
       n_str = sprintf( '%04d', batchopt.exp_ids{i}(k));
@@ -89,17 +90,17 @@ end
 %% MINI ANALYSIS  
 if analyze_mini==1
 if length(failure1)>=1 & length(failure2)>=1%
-[neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
 failure1=[];
 failure2=[];
 %list=[];
 elseif length(failure1)>=1 & length(failure2)==0%
- [neg_failure, pos_failure]=minianalysis(list, failure1, exp_folder, factor,display,user);
+ [neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);
 failure1=[];
 %list=[];
 elseif length(failure2)>=1 & length(failure1)==0% 
-[neg_failure, pos_failure]=minianalysis(list, failure2, exp_folder, factor,display,user);
+[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);
 failure2=[];
 else
 disp('No failure recording');    
@@ -108,32 +109,50 @@ end
 
 %prepare structure for all cells
 
-if analyze_ramp==1 & analyze_mini==1;
+if batchopt.exp_ids2{i}(k)==1
+   slice_nr = 1 ;
+else
+   slice_nr = 2 ;
+end
+if analyze_ramp==1 & analyze_mini==1;   
  dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
  dLGN_ephys.data{adder,2}=blue_ramp;
  dLGN_ephys.data{adder,3}=red_ramp;
  dLGN_ephys.data{adder,4}=neg_failure;
  dLGN_ephys.data{adder,5}=pos_failure;
+ dLGN_ephys.data{adder,6}=PD1;
+ dLGN_ephys.data{adder,7}=PD2;
+ dLGN_ephys.data{adder,8}=slice_nr;
  adder=adder+1;
 end
 if analyze_ramp==1 & analyze_mini==0;
  dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
  dLGN_ephys.data{adder,2}=blue_ramp;
  dLGN_ephys.data{adder,3}=red_ramp;
+ dLGN_ephys.data{adder,4}=slice_nr;
  adder=adder+1;
 end
 if analyze_ramp==0 & analyze_mini==1;
   dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
   dLGN_ephys.data{adder,2}=neg_failure;
   dLGN_ephys.data{adder,3}=pos_failure;
+  dLGN_ephys.data{adder,4}=PD1;
+  dLGN_ephys.data{adder,5}=PD2;
+  dLGN_ephys.data{adder,6}=slice_nr;
+  adder=adder+1;
 end
 end 
 list=[];
 end
 % SAVE in analyzed directory   
+if savefile==1
 cd(adata_dir);
 FileName=['Data_',experimentator,'_',datestr(now, 'hh-dd-mmm-yyyy')];
 save(FileName,'-struct','dLGN_ephys');
+disp('FILE SAVED');
+else
+disp('FILE NOT SAVED');
+end
 end
 %% FURTHER ANALYSIS SUCH AS ODI or AMPA/NMDA RATIO
 

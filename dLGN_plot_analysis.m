@@ -12,9 +12,9 @@ function dLGN_plot_analysis(directory)
 
 filename=uipickfiles('FilterSpec',directory)%pathname, you need uipickfiles function
 load(char(filename));%load mat file 
-%% 
+%% RAMP ANALYSIS
 %%LOAD PEAK AMPLITUDES FOR AMPA and NMDA 
-for i=1:length(data)
+for i=1:size(data,1)
 %AMPA
 blue_ramp_70(:,i)=data{i,2}.neg_peak2(1,:);
 blue_laser_70(:,i)=data{i,2}.laser_amp(1,:);
@@ -288,4 +288,33 @@ xlabel('Cell');
 ylabel('Peak AMPA / Peak NMDA');
 title('AMPA / NMDA Ratio');
 legend('Blue only','Red','Blue constant');
+%% MINI ANALYSIS
+%AMPA
+i_o_suc=zeros(1,size(data,1));
+i_o_suc_sem=zeros(1,size(data,1));
+for i=1:size(data,1)
+mblue_70(:,i)=data{i,4}(1:50,1);
+mred_70(:,i)=data{i,4}(1:50,2);
+mblue_const_70(:,i)=data{i,5}(1:50,2);
+PD_blue_70(:,i)=data{i,6}(1:50,1);
+PD_red_70(:,i)=data{i,6}(1:50,2);
+PD_blue_const_70(:,i)=data{i,7}(1:50,2);
+PD_br_ratio(:,i)=mean(PD_blue_70(:,i))/mean(PD_red_70(:,i));
+if length(find(mblue_70(:,i)<0))>5 & length(find(mred_70(:,i)<0))<7
+    disp('IPSI ONLY');
+    idx_success=find(mblue_70(1:50,i)<0);
+    i_o_suc(:,i)=mean(mblue_70(idx_success));
+    i_o_suc_sem(:,i)=std(mblue_70(idx_success,i))/length(sqrt(idx_success));    
+else
+    disp ('EITHER CONTRA ONLY OR BINOCULAR');
+end
+
+end
+
+
+
+    
+    
+    
+
 end

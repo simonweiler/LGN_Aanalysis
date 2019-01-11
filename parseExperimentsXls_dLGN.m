@@ -5,8 +5,10 @@ function [batchopt] = parseExperimentsXls_dLGN(path,user)
 loadcol       = find(~cellfun(@isempty, strfind(xls_txt(1,:),'BatchAnalyze')));
 mousecol      = find(~cellfun(@isempty, strfind(xls_txt(1,:),'ExperimentalDay')));
 expcol        = find(~cellfun(@isempty, strfind(xls_txt(1,:),'RecordingsSW')));
+expcols2        = find(~cellfun(@isempty, strfind(xls_txt(1,:),'RecordingsSW_slice_nr')));
 if user==1
 expcol      = find(~cellfun(@isempty, strfind(xls_txt(1,:),'RecordingsMF')));
+expcols2    = find(~cellfun(@isempty, strfind(xls_txt(1,:),'RecordingsMF_slice_nr')));
 end
 % samesitecol   = find(~cellfun(@isempty, strfind(xls_txt(1,:),'SameSiteID')));
 % baselinecol   = find(~cellfun(@isempty, strfind(xls_txt(1,:),'Baseline')));
@@ -14,6 +16,7 @@ end
 % basepair14col = find(~cellfun(@isempty, strfind(xls_txt(1,:),'Baselinepair14')));
 % recoverycol   = find(~cellfun(@isempty, strfind(xls_txt(1,:),'fullRec')));
  loaddrivecol  = find(~cellfun(@isempty, strfind(xls_txt(1,:),'loaddrive')));
+ animalname    = find(~cellfun(@isempty, strfind(xls_txt(1,:),'Animal_ID')));
 % airpuffcol    = find(~cellfun(@isempty, strfind(xls_txt(1,:),'Airpuff')));
 % spontcol      = find(~cellfun(@isempty, strfind(xls_txt(1,:),'ExpIDsSpont')));
 % sftfcol       = find(~cellfun(@isempty, strfind(xls_txt(1,:),'ExpIDsSFTF')));
@@ -34,8 +37,10 @@ for i = 2:size(xls_txt,1);
     end
     
     batchopt.mouse{k} = xls_txt(i,mousecol);
+    batchopt.mouseID{k} = xls_txt(i,animalname);
     
     expcellids{k}                = xls_txt(i,expcol);
+     expcellids2{k}                = xls_txt(i,expcols2);
 %     spontcellids{k}                = xls_txt(i,spontcol);
 %     sftfcellids{k}                = xls_txt(i,sftfcol);
 %     puffcellids{k}                = xls_txt(i,airpuffcol);
@@ -44,6 +49,7 @@ for i = 2:size(xls_txt,1);
 
 
     batchopt.exp_ids{k}          = str2num((expcellids{k}{1}));
+    batchopt.exp_ids2{k}          = str2num((expcellids2{k}{1}));
 %     batchopt.spont_ids{k}          = str2num((spontcellids{k}{1}));
 %     batchopt.sftf_ids{k}          = str2num((sftfcellids{k}{1}));
 %     batchopt.puff_ids{k}          = str2num((puffcellids{k}{1}));
