@@ -1,4 +1,4 @@
-function dLGN_plot_analysis(directory) 
+function [ramps_peak ODI]=dLGN_plot_analysis(directory) 
 %SW181229
 %Function for claculating and plotting extracted dLGN ephys data. This
 %function uses the extracted ephys data gnerated with script Analysis_mini_ramp as an input
@@ -156,6 +156,16 @@ end
  com_ODI_sem=[ODI_A_sem' ODI_N_sem'];
  com_R=[R_b' R_r' R_bc'];
  com_R_sem=[R_b_sem' R_r_sem' R_bc_sem'];
+ 
+ %output important variables
+ ramps_peak.red70=r_r_70;
+ ramps_peak.red40=r_r_40;
+ ramps_peak.blue70=b_r_70;
+ ramps_peak.blue40=b_r_40;
+ ramps_peak.blue_constant70=b_c_70;
+ ramps_peak.blue_constant40=b_c_40;
+ ODI.AMPA=ODI_AMPA;
+ ODI.NMDA=ODI_NMDA;
 %% 
 i=[];
 %PLOT GRAPHS
