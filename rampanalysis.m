@@ -47,7 +47,11 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     srF = 1/(1000/sr);
     traces=data.ephys.trace_1;%raw ephys trace
     photodiode=data.acquirer.trace_1;%photodiode (PD) signal
+    try
     blue_amp(j,counter)=header.pulseJacker.pulseJacker.pulseDataMap{4,counter+1}.amplitude;%blue laser amplitude set in ephus 
+    catch
+    blue_amp(j,counter)=0;
+    end
     try
     red_amp(j,counter)=header.pulseJacker.pulseJacker.pulseDataMap{2,counter+1}.amplitude;%red laser amplitude set in ephus
     catch 
@@ -64,8 +68,9 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     neg_fail1(j,counter)=neg_peak1(j,counter)<fc*bs_std*(-1);%vector with binary values when neg peaks crossed definded std threshold
     pos_fail1(j,counter)=pos_peak1(j,counter)>fc*bs_std;%vector with binary values when pos peaks crossed definded std threshold
     %photodiode 
-    PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
-    
+    PD1(j,counter)=mean(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
+    %%%%extract irradiance for red%%%%
+    yirr_red(j,counter)=(12.19*PD1(j,counter)-0.4319)/100;
 %for second window (same extraction as above for blue laser window 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -84,6 +89,10 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     else j==4;
+    currmaxpos(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    if currmaxpos(j,counter)>pos_peak1(j,counter)
+    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    else
     xt=1:50000;
     A=pos_peak1(j,counter);
     t1=find(bs_traces==A);
@@ -107,14 +116,18 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     end
     catch 
     pos_peak2(j,counter)=0;
-    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     end   
+    end
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     integ2(j,counter)=trapz(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
     %photodiode 
-    PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
+    PD2(j,counter)=mean(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
+    %%%%extract irradiance for blue%%%%
+    yirr_blue(j,counter)=(7.232*PD2(j,counter)-0.9951)/100;%given in mW/mm2 compare to Klapoetke 2014 
+    
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
     
@@ -191,7 +204,9 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     neg_fail1(j,counter)=neg_peak1(j,counter)<fc*bs_std*(-1);%vector with binary values when neg peaks crossed definded std threshold
     pos_fail1(j,counter)=pos_peak1(j,counter)>fc*bs_std;%vector with binary values when pos peaks crossed definded std threshold
     %photodiode 
-    PD1(j,counter)=max(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
+    PD1(j,counter)=mean(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window  
+     %%%%extract irradiance for red%%%%
+    yirr_red(j,counter)=(104.1 *PD1(j,counter)-3.467)/100;
     %for second window (same extraction as above for blue laser window 
 %     neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
 %     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
@@ -234,7 +249,7 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     end
     catch 
     pos_peak2(j,counter)=0;
-    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     end   
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,7 +257,9 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     neg_fail2(j,counter)=neg_peak2(j,counter)<fc*bs_std*(-1);
    % pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     %photodiode 
-    PD2(j,counter)=max(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
+    PD2(j,counter)=mean(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
+      %%%%extract irradiance for blue%%%%
+    yirr_blue(j,counter)=(679.2*PD2(j,counter)-26.82)/100;
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
     
@@ -296,6 +313,7 @@ red_ramp.integ1=integ1;
 red_ramp.neg_fail1=neg_fail1;
 red_ramp.pos_fail1=pos_fail1;
 red_ramp.PD=PD1;
+red_ramp.irr_red=yirr_red;
 red_ramp.laser_amp=red_amp;
 if ramp_rtrace==1;
 red_ramp.ephys_traces=ephys_traces;
@@ -308,6 +326,7 @@ blue_ramp.integ2=integ2;
 blue_ramp.neg_fail2=neg_fail2;
 blue_ramp.pos_fail2=pos_fail2;
 blue_ramp.PD=PD2;
+blue_ramp.irr_blue=yirr_blue;
 blue_ramp.laser_amp=blue_amp;
 
 end

@@ -15,12 +15,12 @@ clear all;%delete all current variables in workspace
 close all;%close all open windows/figures 
 
 %%%%%%IMPORTANT FLAGS, PLEASE CHANGE HERE%%%%%%%%%%%%%%%%
-analyze_mini=1;%flag if either mini only and/or ramp should be analyzed (1 or 0)
-analyze_ramp=0;
-fanalysis=0;
+analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
+analyze_ramp=1;
+fanalysis=1;
 factor=4;%std threshold factor 
-display=0;%flag to display plot (1 or 0)
-ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
+display=1;%flag to display plot (1 or 0)
+ramp_rtrace=0;%save raw ephystraces or not (1 or 0)
 savefile=0;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
@@ -39,7 +39,7 @@ dLGN_ephys={};%empty structure for saving variables
 %%%%%%DIRECTORIES%%%%%%%
 rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
 adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly 
-ExpXls            = 'C:\Users\simonweiler\Desktop\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
+ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %% parse Experiments XLS database
@@ -90,17 +90,17 @@ end
 %% MINI ANALYSIS  
 if analyze_mini==1
 if length(failure1)>=1 & length(failure2)>=1%
-[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
-[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
+[neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
 failure1=[];
 failure2=[];
 %list=[];
 elseif length(failure1)>=1 & length(failure2)==0%
- [neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure1, exp_folder, factor,display,user);
+ [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user);
 failure1=[];
 %list=[];
 elseif length(failure2)>=1 & length(failure1)==0% 
-[neg_failure, pos_failure PD1 PD2]=minianalysis(list, failure2, exp_folder, factor,display,user);
+[neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user);
 failure2=[];
 else
 disp('No failure recording');    
@@ -122,7 +122,10 @@ if analyze_ramp==1 & analyze_mini==1;
  dLGN_ephys.data{adder,5}=pos_failure;
  dLGN_ephys.data{adder,6}=PD1;
  dLGN_ephys.data{adder,7}=PD2;
- dLGN_ephys.data{adder,8}=slice_nr;
+ dLGN_ephys.data{adder,8}=IR1_r;
+ dLGN_ephys.data{adder,9}=IR1_b;
+ dLGN_ephys.data{adder,10}=IR2_b;
+ dLGN_ephys.data{adder,11}=slice_nr;
  adder=adder+1;
 end
 if analyze_ramp==1 & analyze_mini==0;
@@ -138,7 +141,10 @@ if analyze_ramp==0 & analyze_mini==1;
   dLGN_ephys.data{adder,3}=pos_failure;
   dLGN_ephys.data{adder,4}=PD1;
   dLGN_ephys.data{adder,5}=PD2;
-  dLGN_ephys.data{adder,6}=slice_nr;
+  dLGN_ephys.data{adder,6}=IR1_r;
+  dLGN_ephys.data{adder,7}=IR1_b;
+  dLGN_ephys.data{adder,8}=IR2_b;
+  dLGN_ephys.data{adder,9}=slice_nr;
   adder=adder+1;
 end
 end 
