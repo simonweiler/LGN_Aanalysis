@@ -17,7 +17,7 @@ analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
 analyze_ramp=1;
 fanalysis=0;
 factor=4;%std threshold factor 
-display=1;%flag to display plot (1 or 0)
+display=0;%flag to display plot (1 or 0)
 ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
 savefile=1;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,7 +37,7 @@ dLGN_ephys={};%empty structure for saving variables
 %%%%%%DIRECTORIES%%%%%%%
 rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
 adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly 
-ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN.xlsx';%directory where excel batch file is located;change accordingly 
+ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN_SW.xlsx';%directory where excel batch file is located;change accordingly 
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %% parse Experiments XLS database
@@ -112,25 +112,49 @@ if batchopt.exp_ids2{i}(k)==1
 else
    slice_nr = 2 ;
 end
-if analyze_ramp==1 & analyze_mini==1;   
- dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
- dLGN_ephys.data{adder,2}=blue_ramp;
- dLGN_ephys.data{adder,3}=red_ramp;
- dLGN_ephys.data{adder,4}=neg_failure;
- dLGN_ephys.data{adder,5}=pos_failure;
- dLGN_ephys.data{adder,6}=PD1;
- dLGN_ephys.data{adder,7}=PD2;
- dLGN_ephys.data{adder,8}=IR1_r;
- dLGN_ephys.data{adder,9}=IR1_b;
- dLGN_ephys.data{adder,10}=IR2_b;
- dLGN_ephys.data{adder,11}=slice_nr;
+if analyze_ramp==1 & analyze_mini==1;  
+ dLGN_ephys.data{1,1}='Animal ID';
+ dLGN_ephys.data{1,2}='Experimental ID';
+ dLGN_ephys.data{1,3}='Slice';
+ dLGN_ephys.data{1,4}='Peak blue';
+ dLGN_ephys.data{1,5}='Peak red';
+ dLGN_ephys.data{1,6}='Category';
+ dLGN_ephys.data{1,7}='Mini AMPA';
+ dLGN_ephys.data{1,8}='Mini NMDA';
+ dLGN_ephys.data{1,9}='Mini PD1';
+ dLGN_ephys.data{1,10}='Mini PD2';
+dLGN_ephys.data{1,11}='Mini Irradiance1';
+ dLGN_ephys.data{1,12}='Mini Irradiance2';
+ dLGN_ephys.data{1,13}='Mini blue const. Irradiance';
+ dLGN_ephys.data{adder+1,1}=[char(batchopt.mouseID{i})];
+ dLGN_ephys.data{adder+1,2}=[char(batchopt.mouse{i}), fold_name];
+  dLGN_ephys.data{adder+1,3}=slice_nr;
+ dLGN_ephys.data{adder+1,4}=blue_ramp;
+ dLGN_ephys.data{adder+1,5}=red_ramp;
+ dLGN_ephys.data{adder+1,6}=batchopt.exp_ids3{i}(k);
+ 
+ dLGN_ephys.data{adder+1,7}=neg_failure;
+ dLGN_ephys.data{adder+1,8}=pos_failure;
+ dLGN_ephys.data{adder+1,9}=PD1;
+ dLGN_ephys.data{adder+1,10}=PD2;
+ dLGN_ephys.data{adder+1,11}=IR1_r;
+ dLGN_ephys.data{adder+1,12}=IR1_b;
+ dLGN_ephys.data{adder+1,13}=IR2_b;
  adder=adder+1;
 end
 if analyze_ramp==1 & analyze_mini==0;
- dLGN_ephys.data{adder,1}=[char(batchopt.mouse{i}), fold_name];
- dLGN_ephys.data{adder,2}=blue_ramp;
- dLGN_ephys.data{adder,3}=red_ramp;
- dLGN_ephys.data{adder,4}=slice_nr;
+ dLGN_ephys.data{1,1}='Animal ID';
+ dLGN_ephys.data{1,2}='Experimental ID';
+ dLGN_ephys.data{1,3}='Slice';
+ dLGN_ephys.data{1,4}='Peak blue';
+ dLGN_ephys.data{1,5}='Peak red';
+ dLGN_ephys.data{1,6}='Category';
+ dLGN_ephys.data{adder+1,1}=[char(batchopt.mouseID{i})];
+ dLGN_ephys.data{adder+1,2}=[char(batchopt.mouse{i}), fold_name];
+ dLGN_ephys.data{adder+1,3}=slice_nr;
+ dLGN_ephys.data{adder+1,4}=blue_ramp;
+ dLGN_ephys.data{adder+1,5}=red_ramp;
+ dLGN_ephys.data{adder+1,6}=batchopt.exp_ids3{i}(k);
  adder=adder+1;
 end
 if analyze_ramp==0 & analyze_mini==1;
@@ -148,6 +172,7 @@ end
 end 
 list=[];
 end
+
 % SAVE in analyzed directory   
 if savefile==1
 cd(adata_dir);
@@ -164,7 +189,8 @@ if fanalysis==1
    disp('dLGN data plotting of extracted parameters and calculation of ODI and AMPA/NMDA RATIOS');
    adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of saved data
    
-   [ramps_peak ODI]= dLGN_plot_analysis(adata_dir)   
+   [ramps_peak ODI data]=dLGN_plot_analysis(adata_dir,0) 
+   
 end
   
     
