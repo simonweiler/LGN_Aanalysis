@@ -1,4 +1,4 @@
-function [ramps_peak ODI]=dLGN_plot_analysis(directory) 
+function [ramps_peak ODI data]=dLGN_plot_analysis(directory,plotyn) 
 %SW181229
 %Function for claculating and plotting extracted dLGN ephys data. This
 %function uses the extracted ephys data gnerated with script Analysis_mini_ramp as an input
@@ -14,29 +14,29 @@ filename=uipickfiles('FilterSpec',directory)%pathname, you need uipickfiles func
 load(char(filename));%load mat file 
 %% RAMP ANALYSIS
 %%LOAD PEAK AMPLITUDES FOR AMPA and NMDA 
-for i=1:size(data,1)
+for i=1:(size(data,1)-1)
 %AMPA
-blue_ramp_70(:,i)=data{i,2}.neg_peak2(1,:);
-blue_laser_70(:,i)=data{i,2}.laser_amp(1,:);
-red_ramp_70(:,i)=data{i,3}.neg_peak1(2,:);
-red_laser_70(:,i)=data{i,3}.laser_amp(2,:); 
-blue_constant_70(:,i)=data{i,2}.neg_peak2(2,:);
-blue_claser_70(:,i)=data{i,2}.laser_amp(2,:);
+blue_ramp_70(:,i)=data{i+1,4}.neg_peak2(1,:);
+blue_laser_70(:,i)=data{i+1,4}.laser_amp(1,:);
+red_ramp_70(:,i)=data{i+1,5}.neg_peak1(2,:);
+red_laser_70(:,i)=data{i+1,5}.laser_amp(2,:); 
+blue_constant_70(:,i)=data{i+1,4}.neg_peak2(2,:);
+blue_claser_70(:,i)=data{i+1,4}.laser_amp(2,:);
 %NMDA
-blue_ramp_40(:,i)=data{i,2}.pos_peak2(3,:);
-blue_laser_40(:,i)=data{i,2}.laser_amp(3,:);
-red_ramp_40(:,i)=data{i,3}.pos_peak1(4,:);
-red_laser_40(:,i)=data{i,3}.laser_amp(4,:);
-blue_constant_40(:,i)=data{i,2}.pos_peak2(4,:);
-blue_claser_40(:,i)=data{i,2}.laser_amp(4,:);
+blue_ramp_40(:,i)=data{i+1,4}.pos_peak2(3,:);
+blue_laser_40(:,i)=data{i+1,4}.laser_amp(3,:);
+red_ramp_40(:,i)=data{i+1,5}.pos_peak1(4,:);
+red_laser_40(:,i)=data{i+1,5}.laser_amp(4,:);
+blue_constant_40(:,i)=data{i+1,4}.pos_peak2(4,:);
+blue_claser_40(:,i)=data{i+1,4}.laser_amp(4,:);
 end
 i=[];
 %% 
 %SET VALUES BELOW STD THRESHOLD CRITERION TO ZERO
-for i=1:length(data)
+for i=1:(length(data)-1)
 %%%%%%%BLUE ONLY AMPA
-idx=find(data{i,2}.neg_fail2(1,:)>0)';
-d=data{i,2}.neg_peak2(1,:);
+idx=find(data{i+1,4}.neg_fail2(1,:)>0)';
+d=data{i+1,4}.neg_peak2(1,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -50,8 +50,8 @@ idx=[];
 d=[];
 ze=[];
 %%%%%%%RED AMPA
-idx=find(data{i,3}.neg_fail1(2,:)>0)';
-d=data{i,3}.neg_peak1(2,:);
+idx=find(data{i+1,5}.neg_fail1(2,:)>0)';
+d=data{i+1,5}.neg_peak1(2,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -65,8 +65,8 @@ idx=[];
 d=[];
 ze=[];
 %%%%%%%BLUE CONSTANT AMPA
-idx=find(data{i,2}.neg_fail2(2,:)>0)';
-d=data{i,2}.neg_peak2(2,:);
+idx=find(data{i+1,4}.neg_fail2(2,:)>0)';
+d=data{i+1,4}.neg_peak2(2,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -80,8 +80,8 @@ idx=[];
 d=[];
 ze=[];
 %%%%%%%BLUE ONLY NMDA
-idx=find(data{i,2}.pos_fail2(3,:)>0)';
-d=data{i,2}.pos_peak2(3,:);
+idx=find(data{i+1,4}.pos_fail2(3,:)>0)';
+d=data{i+1,4}.pos_peak2(3,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -95,8 +95,8 @@ idx=[];
 d=[];
 ze=[];
 %%%%%%%RED NMDA
-idx=find(data{i,3}.pos_fail1(4,:)>0)';
-d=data{i,3}.pos_peak1(4,:);
+idx=find(data{i+1,5}.pos_fail1(4,:)>0)';
+d=data{i+1,5}.pos_peak1(4,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -110,8 +110,8 @@ idx=[];
 d=[];
 ze=[];
 %%%%%%%BLUE CONSTANT NMDA
-idx=find(data{i,2}.pos_fail2(4,:)>0)';
-d=data{i,2}.pos_peak2(4,:);
+idx=find(data{i+1,4}.pos_fail2(4,:)>0)';
+d=data{i+1,4}.pos_peak2(4,:);
 %%%%%%%
 ze=zeros(11,1);
 if length(idx)>=5;
@@ -127,7 +127,7 @@ ze=[];
 end
 %% 
 %ODI and AMPA/NMDA Ratio
- for i=1:length(data)
+ for i=1:(length(data)-1)
  %AMPA
  ODI_raw_AMPA(:,i)=(abs(red_ramp_70(:,i))-abs(blue_constant_70(:,i)))./(abs(red_ramp_70(:,i))+abs(blue_constant_70(:,i)));
  ODI_AMPA(:,i)=(abs(r_r_70(:,i))-abs(b_c_70(:,i)))./(abs(r_r_70(:,i))+abs(b_c_70(:,i)));
@@ -158,6 +158,7 @@ end
  com_R_sem=[R_b_sem' R_r_sem' R_bc_sem'];
  
  %output important variables
+ 
  ramps_peak.red70=r_r_70;
  ramps_peak.red40=r_r_40;
  ramps_peak.blue70=b_r_70;
@@ -166,8 +167,20 @@ end
  ramps_peak.blue_constant40=b_c_40;
  ODI.AMPA=ODI_AMPA;
  ODI.NMDA=ODI_NMDA;
+ ODI.aAMPA=ODI_A;
+ ODI.aNMDA=ODI_N;
+ 
+ data{1,7}='ODI AMPA';
+ data{1,8}='ODI NMDA';
+ 
+ for i=1:(length(data)-1)
+   data{i+1,7}=ODI_A(i);
+   data{i+1,8}=ODI_N(i);
+ end
+     
 %% 
 i=[];
+if plotyn==1
 %PLOT GRAPHS
 cvec=unique(hsv(length(data)*30),'rows');
 Legend=cell(length(data),1)%  two positions 
@@ -176,7 +189,7 @@ set(gcf, 'Position', [200, 0, 600, 1500]);
 f2=figure('Name','NMDA');
 set(gcf, 'Position', [600, 0, 600, 1500]);
 
-for i=1:length(data)
+for i=1:(length(data)-1)
 figure(f1);
 subplot(3,1,1);
 h{i}=plot(blue_laser_70(:,i),b_r_70(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
@@ -193,7 +206,7 @@ legend boxoff;
 hold on;
 i=[];
 %%%second repeat
-for i=1:length(data)
+for i=1:(length(data)-1)
 subplot(3,1,2);
 m{i}=plot(blue_laser_70(:,i),r_r_70(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
 title('Red laser');
@@ -208,7 +221,7 @@ legend boxoff;
 hold on;
 i=[];
 %%%third repeat
-for i=1:length(data)
+for i=1:(length(data)-1)
 subplot(3,1,3);
 m{i}=plot(blue_claser_70(:,i),b_c_70(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
 title('Blue constant');
@@ -226,7 +239,7 @@ i=[];
 %40mV NMDA
 %1st repeat
 figure(f2);
-for i=1:length(data)
+for i=1:(length(data)-1)
 subplot(3,1,1);
 m{i}=plot(blue_laser_40(:,i),b_r_40(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
 title('Blue laser only');
@@ -242,7 +255,7 @@ legend boxoff;
 hold on;
 i=[];
 %2nd repeat
-for i=1:length(data)
+for i=1:(length(data)-1)
 subplot(3,1,2);
 m{i}=plot(blue_laser_40(:,i),r_r_40(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
 title('Red laser');
@@ -258,7 +271,7 @@ legend boxoff;
 hold on;
 i=[];
 %3rd repeat
-for i=1:length(data)
+for i=1:(length(data)-1)
 subplot(3,1,3);
 m{i}=plot(blue_claser_40(:,i),b_c_40(:,i),'--s','LineWidth',2,'MarkerSize',5,'Color',cvec(i*30,:));
 title('Blue constant');
@@ -335,6 +348,6 @@ legend('Blue only','Red','Blue constant');
 
     
     
-    
+end   
 
 end
