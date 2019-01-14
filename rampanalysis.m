@@ -85,13 +85,20 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     if j<=2
     pos_peak2(j,counter)=0;
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
     elseif j==3
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
     else j==4;
     currmaxpos(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
     if currmaxpos(j,counter)>pos_peak1(j,counter)
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
     else
     xt=1:50000;
     A=pos_peak1(j,counter);
@@ -107,7 +114,9 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
          diff_bs_traces(m,:)=bs_traces(m)-yf(m);
      end  
      bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
+     if show==1
      %figure;plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+     end
      pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:)); 
      pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
      if gof.adjrsquare<0.9
@@ -117,6 +126,8 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     catch 
     pos_peak2(j,counter)=0;
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+      yf=bs_traces;
+    diff_bs_traces=bs_traces;
     end   
     end
     end
@@ -130,6 +141,8 @@ for j=1:(length(idx)/11)% how many ramps in total; loop across ramps per cell
     
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
+    fit_traces(:,counter,j)=yf;
+    diff_traces(:,counter,j)=diff_bs_traces;
     
     counter=counter+1;
     traces=[];
@@ -222,11 +235,22 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     if j<=2
     pos_peak2(j,counter)=0;
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
     elseif j==3
     pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
     else j==4;
-    xt=1:50000;
+    currmaxpos(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    if currmaxpos(j,counter)>pos_peak1(j,counter)
+    pos_peak2(j,counter)=max(bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
+    yf=bs_traces;
+    diff_bs_traces=bs_traces;
+    pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+    else
+    xt=1:200000;
     A=pos_peak1(j,counter);
     t1=find(bs_traces==A);
     t1=t1(1);
@@ -236,11 +260,13 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     try
     [f gof]=fit(t,curr_t,'exp1');
     yf=f.a*exp(f.b*xt);
-     for m=1:10000;
+     for m=1:40000;
          diff_bs_traces(m,:)=bs_traces(m)-yf(m);
      end  
      bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
+     if show==1
      %figure;plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+     end
      pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:)); 
      pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
      if gof.adjrsquare<0.9
@@ -250,7 +276,10 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     catch 
     pos_peak2(j,counter)=0;
     pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_std;
+      yf=bs_traces;
+    diff_bs_traces=bs_traces;
     end   
+    end
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     integ2(j,counter)=trapz(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
@@ -262,6 +291,8 @@ for j=1:length(idx)% how many ramps in total; loop across ramps per cell
     yirr_blue(j,counter)=(679.2*PD2(j,counter)-26.82)/100;
     %ephys_traces
     ephys_traces(:,counter,j)=bs_traces;
+      fit_traces(:,counter,j)=yf;
+    diff_traces(:,counter,j)=diff_bs_traces;
     
     counter=counter+1;
     traces=[];
@@ -317,6 +348,9 @@ red_ramp.irr_red=yirr_red;
 red_ramp.laser_amp=red_amp;
 if ramp_rtrace==1;
 red_ramp.ephys_traces=ephys_traces;
+red_ramp.fit_traces=fit_traces;
+red_ramp.diff_traces=diff_traces;
+
 end
 
 %create structure with extracted parameters 

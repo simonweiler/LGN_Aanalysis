@@ -17,11 +17,11 @@ close all;%close all open windows/figures
 %%%%%%IMPORTANT FLAGS, PLEASE CHANGE HERE%%%%%%%%%%%%%%%%
 analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
 analyze_ramp=1;
-fanalysis=1;
+fanalysis=0;
 factor=4;%std threshold factor 
 display=1;%flag to display plot (1 or 0)
-ramp_rtrace=0;%save raw ephystraces or not (1 or 0)
-savefile=0;%save file at the end or not
+ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
+savefile=1;%save file at the end or not
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if analyze_mini==1 || analyze_ramp==1;
 disp('dLGN Analysis Mini and Ramp');
@@ -166,7 +166,7 @@ if fanalysis==1
    disp('dLGN data plotting of extracted parameters and calculation of ODI and AMPA/NMDA RATIOS');
    adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of saved data
    
-   dLGN_plot_analysis(adata_dir)   
+   [ramps_peak ODI]= dLGN_plot_analysis(adata_dir)   
 end
   
     
