@@ -42,15 +42,15 @@ adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data di
 ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN_SW.xlsx';%directory where excel batch file is located;change accordingly
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%DIRECTORIES - TR2019 %%%%%%%
-% TR2019: MAC: mount smb shares to /Volumes/first (easiest: do command+K in
-% finder)
-% 'smb://10G.ISI01.neuro.mpg.de/archive_bonhoeffer_group$/Simon Weiler/EXPLORER ONE'
-% 'smb://S15.neuro.mpg.de/R-bonhoe/Share/Simon/LGN_2019_SW_MF_JB_TR/dLGN_ephys_analysis_excel spread sheet/'
+% %%%%%DIRECTORIES - TR2019 %%%%%%%
+% % TR2019: MAC: mount smb shares to /Volumes/first (easiest: do command+K in
+% % finder)
+% % 'smb://10G.ISI01.neuro.mpg.de/archive_bonhoeffer_group$/Simon Weiler/EXPLORER ONE'
+% % 'smb://S15.neuro.mpg.de/R-bonhoe/Share/Simon/LGN_2019_SW_MF_JB_TR/dLGN_ephys_analysis_excel spread sheet/'
 % rdata_dir         = '/Volumes/EXPLORER ONE/dLGN_rawDATA/'
 % adata_dir         = '~/Analysis/dLGN_ephys_Analysis/'
 % ExpXls            = '/Volumes/dLGN_ephys_analysis_excel spread sheet/Experiments_dLGN.xlsx'
-%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%
 
 %% parse Experiments XLS database
 batchopt          = parseExperimentsXls_dLGN(ExpXls,user);%calls the nested function parseExperimentsXls_dLGN and considers the user flag (1 or 0)
