@@ -52,12 +52,6 @@ if analyze_mini==1 || analyze_ramp==1;
     % ExpXls            = '/Volumes/dLGN_ephys_analysis_excel spread sheet/Experiments_dLGN_SW.xlsx'
     % %%%%%%%%%%%%%%%%%%%%%%
 
-    if ismac %query OS to change the dir separator accordingly
-        dirsep = '/';
-    else
-        dirsep = '\';
-    end
-
     %% parse Experiments XLS database
     batchopt          = parseExperimentsXls_dLGN(ExpXls,user);%calls the nested function parseExperimentsXls_dLGN and considers the user flag (1 or 0)
     nummice           = length(batchopt.mouse);%length of experiments to be analyzed
@@ -66,7 +60,7 @@ if analyze_mini==1 || analyze_ramp==1;
 
     adder=1;%counting variable
     for i=1:nummice%for loop over experiments across days
-        datapath=fullfile(rdata_dir, batchopt.mouse{i}, '\');%directory and name of experiments (from excel sheet)
+        datapath=fullfile(rdata_dir, batchopt.mouse{i}, filesep);%directory and name of experiments (from excel sheet)
         cd(char(datapath));%go to directory
 
         for k=1:length(batchopt.exp_ids{i})%loop in bigger loop for each cell per experimental day
@@ -80,7 +74,7 @@ if analyze_mini==1 || analyze_ramp==1;
             list=dir([char(exp_folder) '\*.xsg']);%xsg files per cell
             len=length(list);%number of xsg files per cell
             for j=1:len
-                load([char(exp_folder) '/' list(j).name],'-mat');%load each xsg file
+                load([char(exp_folder) filesep list(j).name],'-mat');%load each xsg file
                 iterations(:,j)=header.loopGui.loopGui.iterations;%find out whether mini or ramp recording
             end
 
