@@ -19,10 +19,12 @@ analyze_mini=0;%flag if either mini only and/or ramp should be analyzed (1 or 0)
 analyze_ramp=1;
 fanalysis=0;
 factor=4;%std threshold factor
-display=0;%flag to display plot (1 or 0)
+display=1;%flag to display plot (1 or 0)
 ramp_rtrace=1;%save raw ephystraces or not (1 or 0)
 savefile=1;%save file at the end or not
+filterephys=1;%TR2019 filter ephys traces (filter specs see nested functions)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 if analyze_mini==1 || analyze_ramp==1;
     disp('dLGN Analysis Mini and Ramp');
 
@@ -34,23 +36,23 @@ if analyze_mini==1 || analyze_ramp==1;
         experimentator = 'MF';%MF data
     end
 
-
     dLGN_ephys={};%empty structure for saving variables
-    %%%%%%DIRECTORIES%%%%%%%
-    rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
-    adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly
-    ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN_SW.xlsx';%directory where excel batch file is located;change accordingly
-    %%%%%%%%%%%%%%%%%%%%%%%%
 
-    % %%%%DIRECTORIES - TR2019 %%%%%%%
-    % % TR2019: MAC: mount smb shares to /Volumes/first (easiest: do command+K in
-    % % finder)
-    % % 'smb://10G.ISI01.neuro.mpg.de/archive_bonhoeffer_group$/Simon Weiler/EXPLORER ONE'
-    % % 'smb://S15.neuro.mpg.de/R-bonhoe/Share/Simon/LGN_2019_SW_MF_JB_TR/dLGN_ephys_analysis_excel spread sheet/'
-    % rdata_dir         = '/Volumes/EXPLORER ONE/dLGN_rawDATA/'
-    % adata_dir         = '~/Analysis/dLGN_ephys_Analysis/'
-    % ExpXls            = '/Volumes/dLGN_ephys_analysis_excel spread sheet/Experiments_dLGN_SW.xlsx'
-    % %%%%%%%%%%%%%%%%%%%%%%
+    %     %%%%%%DIRECTORIES%%%%%%%
+    %     rdata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_rawDATA';%data directory of raw data;change accordingly
+    %     adata_dir         = 'I:\Simon Weiler\EXPLORER ONE\dLGN_ephys_Analysis\';%data directory of extracted date;change accordingly
+    %     ExpXls            = 'R:\Share\Simon\LGN_2019_SW_MF_JB_TR\dLGN_ephys_analysis_excel spread sheet\Experiments_dLGN_SW.xlsx';%directory where excel batch file is located;change accordingly
+    %     %%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%DIRECTORIES - TR2019 %%%%%%%
+    % TR2019: MAC: mount smb shares to /Volumes/first (easiest: do command+K in
+    % finder)
+    % 'smb://10G.ISI01.neuro.mpg.de/archive_bonhoeffer_group$/Simon Weiler/EXPLORER ONE'
+    % 'smb://S15.neuro.mpg.de/R-bonhoe/Share/Simon/LGN_2019_SW_MF_JB_TR/dLGN_ephys_analysis_excel spread sheet/'
+    rdata_dir         = '/Volumes/EXPLORER ONE/dLGN_rawDATA/';
+    adata_dir         = '~/Analysis/dLGN_ephys_Analysis/';
+    ExpXls            = '/Volumes/dLGN_ephys_analysis_excel spread sheet/Experiments_dLGN_SW.xlsx';
+    %%%%%%%%%%%%%%%%%%%%%%
 
     %% parse Experiments XLS database
     batchopt          = parseExperimentsXls_dLGN(ExpXls,user);%calls the nested function parseExperimentsXls_dLGN and considers the user flag (1 or 0)
@@ -71,7 +73,7 @@ if analyze_mini==1 || analyze_ramp==1;
             end
             fold_name=[experimentator n_str];%complete cell folder name such as SW0001 or MF0001
             exp_folder=fullfile(datapath,fold_name);%complete folder and directory
-            list=dir([char(exp_folder) '\*.xsg']);%xsg files per cell
+            list=dir([char(exp_folder) filesep '*.xsg']);%xsg files per cell
             len=length(list);%number of xsg files per cell
             for j=1:len
                 load([char(exp_folder) filesep list(j).name],'-mat');%load each xsg file
@@ -92,7 +94,7 @@ if analyze_mini==1 || analyze_ramp==1;
             iterations=[];
             %% RAMP ANALYSIS
             if analyze_ramp==1
-                [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace,user);%use nested function rampanalysis
+                [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace,user, filterephys);%use nested function rampanalysis
                 ramp=[];%clear variables for next iteration
                 %list=[];%clear variables for next iteration
             end
@@ -100,17 +102,17 @@ if analyze_mini==1 || analyze_ramp==1;
             %% MINI ANALYSIS
             if analyze_mini==1
                 if length(failure1)>=1 & length(failure2)>=1%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user);%call minianalysis
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user);%call minianalysis
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys);%call minianalysis
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys);%call minianalysis
                     failure1=[];
                     failure2=[];
                     %list=[];
                 elseif length(failure1)>=1 & length(failure2)==0%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user);
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys);
                     failure1=[];
                     %list=[];
                 elseif length(failure2)>=1 & length(failure1)==0%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user);
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys);
                     failure2=[];
                 else
                     disp('No failure recording');
@@ -204,12 +206,6 @@ if fanalysis==1
     [ramps_peak ODI data]=dLGN_plot_analysis(adata_dir,0)
 
 end
-
-
-
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-function  [blue_ramp, red_ramp]=rampanalysis(list, idx, pathName, fc, show, ramp_rtrace, user);
+function  [blue_ramp, red_ramp]=rampanalysis(list, idx, pathName, fc, show, ramp_rtrace, user, filterephys);
 %SW181229
 %function to extract synaptic current peak, integral and photodiode signal
 %for blue and red laser
@@ -23,9 +23,9 @@ bluepeak_start      =   351;
 bluepeak_end        =   400;
 
 %% TR2019: filtering
-filterephys = 1;        % filtering yes/no?
-cutoff      = 1000      % Hz (use 500 Hz for mini event / amplitude detection and 1000Hz for max currents. Chen & Regehr 2000)
-order       = 4         % filter order ('pole'). (use 4 pole for minis and max current. Chen & Regehr 2000)
+% filterephys = 1;        % filtering yes/no?
+cutoff      = 1000;     % Hz (use 500 Hz for mini event / amplitude detection and 1000Hz for max currents. Chen & Regehr 2000)
+order       = 4;        % filter order ('pole'). (use 4 pole for minis and max current. Chen & Regehr 2000)
 type        = 'Bessel'; % filter type ('Bessel' or 'Butter' (for Butterworth -> ). Default: Bessel. Use Bessel at > 4 order to prevent ripples)
 
 if filterephys;
@@ -37,8 +37,9 @@ end
 %create vector with start and end point for each ramp within the cell recording
 %plot if wanted
 if show==1
-    figure;
-    set(gcf, 'Position', [200, 0, 1500, 1000]);
+    fig1 = figure;
+    set(fig1, 'Name', char(pathName));
+    set(fig1, 'Position', [200, 0, 1500, 1000]);
 end
 
 if user==0%SW
@@ -57,11 +58,11 @@ if user==0%SW
             sr = header.ephys.ephys.sampleRate;%check sample rate
             srF = 1/(1000/sr);
             traces=data.ephys.trace_1;%raw ephys trace
-
+            
             if filterephys % TR2019: filtering
                 traces = lowpassfilt(traces, order, cutoff, sr, type);
             end
-
+            
             photodiode=data.acquirer.trace_1;%photodiode (PD) signal
             try
                 blue_amp(j,counter)=header.pulseJacker.pulseJacker.pulseDataMap{4,counter+1}.amplitude;%blue laser amplitude set in ephus
@@ -73,29 +74,32 @@ if user==0%SW
             catch
                 red_amp(j,counter)=0;
             end
+            
             bs=traces(base_start*srF:base_end*srF,:);%first 100 ms baseline trace
             bs_std=std(bs);%std of baseline trace
             bs_traces=traces-mean(traces(base_start*srF:base_end*srF,:));%subtract baseline
             bs_photodiode=photodiode-mean(photodiode(base_start*srF:base_end*srF,:));
+            
             %for first window
             neg_peak1(j,counter)=min(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%negative peak within the red stimulation window
             pos_peak1(j,counter)=max(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%positive peak within the red stimulation window
             integ1(j,counter)=trapz(bs_traces(redpeak_start*srF:redpeak_end*srF,:));%Integral within the red stimulation window
             neg_fail1(j,counter)=neg_peak1(j,counter)<fc*bs_std*(-1);%vector with binary values when neg peaks crossed definded std threshold
             pos_fail1(j,counter)=pos_peak1(j,counter)>fc*bs_std;%vector with binary values when pos peaks crossed definded std threshold
+            
             %photodiode
             PD1(j,counter)=mean(bs_photodiode(redpeak_start*srF:redpeak_end*srF,:));%max values of PD signal within the red stimulation window
             %%%%extract irradiance for red%%%%
             yirr_red(j,counter)=(12.19*PD1(j,counter)-0.4319)/100;
             %for second window (same extraction as above for blue laser window
-
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%IMPLEMENTED AFTER MEETING FROM 190109%% neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:));
             %neg peak2 is calculated using the current difference  between the last 10ms of
             %the first time window and the peak in the subsequent 2nd window to
             %correct for decay issues from the first pulse
             neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:))-mean(bs_traces((redpeak_end-10)*srF:redpeak_end*srF,:));
-
+            
             %%%IMPLEMENTED AFTER MEETING FROM 190109%For NMDA: approach is to fit an expontial and then subtract this from
             %the actual curve to detect a second peak
             if j<=2
@@ -131,7 +135,9 @@ if user==0%SW
                         end
                         bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
                         if show==1
-                            %figure;plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+                            fitfig = figure;
+                            plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+                            set(fitfig, 'Name', ['FIT:' char(pathName) ]);
                         end
                         pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
                         pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
@@ -154,12 +160,12 @@ if user==0%SW
             PD2(j,counter)=mean(bs_photodiode(bluepeak_start*srF:bluepeak_end*srF,:));
             %%%%extract irradiance for blue%%%%
             yirr_blue(j,counter)=(7.232*PD2(j,counter)-0.9951)/100;%given in mW/mm2 compare to Klapoetke 2014
-
+            
             %ephys_traces
             ephys_traces(:,counter,j)=bs_traces;
             fit_traces(:,counter,j)=yf;
             diff_traces(:,counter,j)=diff_bs_traces;
-
+            
             counter=counter+1;
             traces=[];
             %%%%%%%%%%%%%%plot
@@ -206,10 +212,15 @@ else
         if show==1
             subplot(2,(length(idx))-2,j);
         end
-        load([char(pathName) '/' list(idx(j)).name],'-mat');
+        load([char(pathName) filesep list(idx(j)).name],'-mat');
         sr = header.ephys.ephys.sampleRate;%check sample rate
         srF = 1/(1000/sr);
         traces=data.ephys.trace_1;%raw ephys trace
+        
+        if filterephys % TR2019: filtering
+            traces = lowpassfilt(traces, order, cutoff, sr, type);
+        end
+        
         photodiode=data.acquirer.trace_1;%photodiode (PD) signal
         ind_traces=reshape(traces,[length(traces)/11 11]);
         photodiode=reshape(photodiode,[length(traces)/11 11]);
@@ -245,7 +256,7 @@ else
             %the first time window and the peak in the subsequent 2nd window to
             %correct for decay issues from the first pulse
             neg_peak2(j,counter)=min(bs_traces(bluepeak_start*srF:bluepeak_end*srF,:))-mean(bs_traces((redpeak_end-10)*srF:redpeak_end*srF,:));
-
+            
             %%%IMPLEMENTED AFTER MEETING FROM 190109%For NMDA: approach is to fit an expontial and then subtract this from
             %the actual curve to detect a second peak
             if j<=2
@@ -309,10 +320,10 @@ else
             ephys_traces(:,counter,j)=bs_traces;
             fit_traces(:,counter,j)=yf;
             diff_traces(:,counter,j)=diff_bs_traces;
-
+            
             counter=counter+1;
             traces=[];
-
+            
             %%%%%%%%%%%%%%plot
             if show==1
                 plot(bs_traces(1:20000,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
@@ -320,8 +331,8 @@ else
                 ylabel('Synaptic input (pA)');
                 xlabel('Time (ms)');
             end
-
-
+            
+            
             if show==1;
                 %%red vertical lines
                 hold on;
@@ -366,7 +377,7 @@ if ramp_rtrace==1;
     red_ramp.ephys_traces=ephys_traces;
     red_ramp.fit_traces=fit_traces;
     red_ramp.diff_traces=diff_traces;
-
+    
 end
 
 %create structure with extracted parameters
