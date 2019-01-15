@@ -38,7 +38,7 @@ end
 
 
 for i=1:length(idx);
-load([char(pathName) '/' list(idx(i)).name],'-mat');
+load([char(pathName) filesep list(idx(i)).name],'-mat');
 sr = header.ephys.ephys.sampleRate;%check sample rate
 srF = 1/(1000/sr);
 ephystraces=data.ephys.trace_1;
