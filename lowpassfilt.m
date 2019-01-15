@@ -3,7 +3,7 @@ function filtered = lowpassfilt(signal, order, fc, fs, type)
 %   filtered = LOWPASSFILT(signal, order, fc, fs, type) filters the input
 %   signal at a cutoff freqeuency (fc, in Hz) of sampling rate (fs) using either a Bessel (type = 'Bessel') or
 %   Butterworth (type = 'Butter') filter of 'order' order (aka pole).
-
+% Tobias Rose 2019
 if nargin < 5
     type = 'Bessel';
 end
@@ -16,5 +16,3 @@ elseif type == 'Bessel'
 end
 
 filtered = filtfilt(b,a,signal);                    % bidirectional filtering w/o phase distortion
-
-  
