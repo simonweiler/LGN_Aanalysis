@@ -1,4 +1,4 @@
-function  [blue_ramp, red_ramp]=rampanalysis(list, idx, pathName, fc, show, ramp_rtrace, user, filterephys);
+function  [blue_ramp, red_ramp]=rampanalysis(list, idx, pathName, fc, show, ramp_rtrace, user, filterephys,adata_dir);
 %SW181229
 %function to extract synaptic current peak, integral and photodiode signal
 %for blue and red laser
@@ -34,9 +34,15 @@ if filterephys;
     disp('- - - - - - - -')
 end
 
+%% TR2019: plot specs
+plotlength = 1; %seconds
+savefig = 1; %save main figure
+
 %create vector with start and end point for each ramp within the cell recording
 %plot if wanted
 if show==1
+    try; close(fig1); end
+    try; close(fitfig); end
     fig1 = figure;
     set(fig1, 'Name', char(pathName));
     set(fig1, 'Position', [200, 0, 1500, 1000]);
@@ -57,6 +63,10 @@ if user==0%SW
             load([char(pathName) filesep list(idx(i)).name],'-mat');
             sr = header.ephys.ephys.sampleRate;%check sample rate
             srF = 1/(1000/sr);
+            
+            samples_per_sweep = header.ephys.ephys.traceLength*sr;
+            timebase=1/sr:1/sr:samples_per_sweep/sr; %TR2019: timebase
+            
             traces=data.ephys.trace_1;%raw ephys trace
             
             if filterephys % TR2019: filtering
@@ -135,9 +145,9 @@ if user==0%SW
                         end
                         bs_diff_std=std(diff_bs_traces((redpeak_end-100)*srF:redpeak_end*srF,:));
                         if show==1
-                            fitfig = figure;
-                            plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
-                            set(fitfig, 'Name', ['FIT:' char(pathName) ]);
+%                             fitfig = figure;
+%                             plot(bs_traces);hold on;plot(yf);plot(diff_bs_traces);
+%                             set(fitfig, 'Name', ['FIT:' char(pathName) ]);
                         end
                         pos_peak2(j,counter)=max(diff_bs_traces(bluepeak_start*srF:(bluepeak_end+50)*srF,:));
                         pos_fail2(j,counter)=pos_peak2(j,counter)>fc*bs_diff_std;
@@ -170,10 +180,10 @@ if user==0%SW
             traces=[];
             %%%%%%%%%%%%%%plot
             if show==1
-                plot(bs_traces(1:10000,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
+                plot(bs_traces(1:plotlength*sr,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
                 hold on;
                 ylabel('Synaptic input (pA)');
-                xlabel('Time (ms)');
+                xlabel('Samples');
             end
             if show==1;
                 %%red vertical lines
@@ -206,7 +216,10 @@ if user==0%SW
         end
     end
     %MF user==0
-else
+else % TR2019: check if this can be unified by simply parsing & injecting the different setup settinigs )sampling rat etc)
+    % like this this is really asking for trouble (e.g. changes in the first
+    % condition wont be automatically used here)
+    
     for j=1:length(idx)% how many ramps in total; loop across ramps per cell
         counter=1;
         if show==1
@@ -215,6 +228,10 @@ else
         load([char(pathName) filesep list(idx(j)).name],'-mat');
         sr = header.ephys.ephys.sampleRate;%check sample rate
         srF = 1/(1000/sr);
+        
+        samples_per_sweep = header.ephys.ephys.traceLength*sr;
+        timebase=1/sr:1/sr:samples_per_sweep/sr; %TR2019: timebase
+        
         traces=data.ephys.trace_1;%raw ephys trace
         
         if filterephys % TR2019: filtering
@@ -326,10 +343,10 @@ else
             
             %%%%%%%%%%%%%%plot
             if show==1
-                plot(bs_traces(1:20000,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
+                plot(bs_traces(1:plotlength*sr,:),'linewidth',1,'Color',[0 0 0]+0.05*counter);
                 hold on;
                 ylabel('Synaptic input (pA)');
-                xlabel('Time (ms)');
+                xlabel('Samples');
             end
             
             
@@ -364,6 +381,15 @@ else
         end
     end
 end
+
+if savefig
+    cd(adata_dir);
+    saveas(fig1, [char(pathName) '.png'])
+%     try
+%         saveas(fitfig, [char(pathName) '.png'])
+%     end
+end
+
 %%%%%%%%%%%%%%%%%%%%%  output %%%%%%%%%%%%%%%%%
 red_ramp.neg_peak1=neg_peak1;
 red_ramp.pos_peak1=pos_peak1;

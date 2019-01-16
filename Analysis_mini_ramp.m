@@ -94,7 +94,7 @@ if analyze_mini==1 || analyze_ramp==1;
             iterations=[];
             %% RAMP ANALYSIS
             if analyze_ramp==1
-                [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace,user, filterephys);%use nested function rampanalysis
+                [blue_ramp, red_ramp]=rampanalysis(list, ramp, exp_folder, factor,display,ramp_rtrace,user, filterephys,adata_dir);%use nested function rampanalysis
                 ramp=[];%clear variables for next iteration
                 %list=[];%clear variables for next iteration
             end
@@ -102,17 +102,17 @@ if analyze_mini==1 || analyze_ramp==1;
             %% MINI ANALYSIS
             if analyze_mini==1
                 if length(failure1)>=1 & length(failure2)>=1%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys);%call minianalysis
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys);%call minianalysis
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys,adata_dir);%call minianalysis
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys,adata_dir);%call minianalysis
                     failure1=[];
                     failure2=[];
                     %list=[];
                 elseif length(failure1)>=1 & length(failure2)==0%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys);
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure1, exp_folder, factor,display,user, filterephys,adata_dir);
                     failure1=[];
                     %list=[];
                 elseif length(failure2)>=1 & length(failure1)==0%
-                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys);
+                    [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, failure2, exp_folder, factor,display,user, filterephys,adata_dir);
                     failure2=[];
                 else
                     disp('No failure recording');

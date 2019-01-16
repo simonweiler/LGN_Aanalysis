@@ -1,4 +1,4 @@
-function  [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, idx, pathName, fc, show, user, filterephys);
+function  [neg_failure, pos_failure PD1 PD2 IR1_r IR1_b IR2_b]=minianalysis(list, idx, pathName, fc, show, user, filterephys,adata_dir);
 %SW181229
 %Function that extracts minis by using the std threshold criterion
 
@@ -30,6 +30,10 @@ cutoff      = 500;      % Hz (use 500 Hz for mini event / amplitude detection an
 order       = 4;        % filter order ('pole'). (use 4 pole for minis and max current. Chen & Regehr 2000)
 type        = 'Bessel'; % filter type ('Bessel' or 'Butter' (for Butterworth -> ). Default: Bessel. Use Bessel at > 4 order to prevent ripples)
 
+%% TR2019: plot specs
+plotlength = .3; %seconds
+savefig = 1; %save main figure
+
 if filterephys
     disp('- - - - - - - -')
     disp(['Filtering: ' num2str(order) ' pole ' type '-Filter w/ ' num2str(cutoff) ' Hz cutoff']);
@@ -41,22 +45,25 @@ for i=1:length(idx);
     load([char(pathName) filesep list(idx(i)).name],'-mat');
     sr = header.ephys.ephys.sampleRate;%check sample rate
     srF = 1/(1000/sr);
+    samples_per_sweep = header.ephys.ephys.traceLength*sr;
+    timebase=1/sr:1/sr:samples_per_sweep/sr; %TR2019: timebase
+
     ephystraces=data.ephys.trace_1;
-    
+
     if filterephys % TR2019: filtering
         ephystraces = lowpassfilt(ephystraces, order, cutoff, sr, type);
     end
-    
-    if user==0%SW
-        traces=reshape(ephystraces, 10000, length(ephystraces)/10000);
+
+    if user==0%SW %TR2019 should now work w/o user exceptions... kept it in, though
+        traces=reshape(ephystraces, samples_per_sweep, length(ephystraces)/samples_per_sweep);
         photodiode=data.acquirer.trace_1;
-        photodiode=reshape(photodiode, 10000, length(ephystraces)/10000);
+        photodiode=reshape(photodiode, samples_per_sweep, length(ephystraces)/samples_per_sweep);
     else %MF
-        traces=reshape(ephystraces, 20000, length(ephystraces)/20000);
+        traces=reshape(ephystraces, samples_per_sweep, length(ephystraces)/samples_per_sweep);
         photodiode=data.acquirer.trace_1;
-        photodiode=reshape(photodiode, 20000, length(ephystraces)/20000);
+        photodiode=reshape(photodiode, samples_per_sweep, length(ephystraces)/samples_per_sweep);
     end
-    
+
     bs=traces(base_start*srF:base_end*srF,:);
     bs_std=std(bs);
     bs_traces=bsxfun(@minus, traces, mean(bs));
@@ -71,7 +78,7 @@ for i=1:length(idx);
     neg_m(neg_idx)=neg_peak(neg_idx);
     pos_m=zeros(1,size(traces,2));
     pos_m(pos_idx)=pos_peak(pos_idx);
-    
+
     try
         neg_fail(neg_idx)=neg_peak(neg_idx);
         pos_fail(pos_idx)=pos_peak(pos_idx);
@@ -79,12 +86,12 @@ for i=1:length(idx);
         neg_fail=zeros(length(pos_peak));
         pos_fail=zeros(length(pos_peak));
     end
-    
+
     neg_failure(:,i)=neg_m;
     pos_failure(:,i)=pos_m;
     PD1(:,i)=mean(photodiode(pulse_start *srF:pulse_end*srF,:));
     PD2(:,i)=mean(photodiode(pulse2_start *srF:pulse2_end*srF,:));
-    
+
     if user==0%SW
         IR1_r(:,i)=(12.19*PD1(:,i)-0.4319)/100;
         IR1_b(:,i)=(7.232*PD1(:,i)-0.9951)/100;
@@ -94,17 +101,20 @@ for i=1:length(idx);
         IR1_b(:,i)=(679.2*PD1(:,i)-26.82)/100;
         IR2_b(:,i)=(679.2*PD2(:,i)-26.82)/100;
     end
-    
+
     %PLOT
     if show==1
-        figure;
+        try; close(fig2); end
+        fig2=figure;
         for k=1:size(traces,2)
             subplot(size(bs_traces,2)/10,10,k);
             if user==0%SW
-                plot(bs_traces(1:2000,k));
+                plot(timebase(1:plotlength*sr),bs_traces(1:plotlength*sr,k));
             else%MF
-                plot(bs_traces(1:4000,k));
+                plot(timebase(1:plotlength*sr),bs_traces(1:plotlength*sr,k));
             end
+            xlabel('time [s]'); ylabel('I [pA]')
+            ylim([min(neg_peak) - 10 max(pos_peak) + 10]); % TR2019: fixed axis scaling
         end
         figure;
         plot(neg_peak,'*');
@@ -115,5 +125,9 @@ for i=1:length(idx);
         hold on;
         plot(repmat(fc*(mean(bs_std)),length(pos_peak)));
     end
+end
+if savefig
+    cd(adata_dir);
+    saveas(fig2, [char(pathName) '.png'])
 end
 end
